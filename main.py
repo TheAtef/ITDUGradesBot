@@ -217,7 +217,7 @@ async def callback_data(call):
                                 try:
                                     await bot.send_document(call.message.chat.id, link, caption = x[0], timeout=600)
                                 except:
-                                    await bot.send_message(call.message.chat.id, f'{x[0]}\n\nماقدرت ارفعو :(\nهي رابط لتنزلو إنت:\n{PREFIX + str(x[-1]).replace(' ', '%20')}')
+                                    await bot.send_message(call.message.chat.id, f'{x[0]}\n\nماقدرت ارفعو\nهي رابط لتنزلو إنت:\n{PREFIX + str(x[-1]).replace(' ', '%20')}')
                     await bot.send_message(call.message.chat.id, 'تم رفوع')
             else:
                 data = call.message.reply_to_message.text.removeprefix('/grades ')
