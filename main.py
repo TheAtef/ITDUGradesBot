@@ -187,7 +187,7 @@ async def callback_data(call):
                             link = (PREFIX + str(x[-1])).replace(' ', '%20')
                             await bot.send_document(call.message.chat.id, link, caption = x[0], timeout=600)
                         except:
-                              await bot.send_message(call.message.chat.id, f"{x[0]}\n\nماقدرت ارفعو\n<a href='{PREFIX + str(x[-1]).replace(' ', '%20')}'>اللينك</a> لتنزلو إنت")
+                              await bot.send_message(call.message.chat.id, f"{x[0]}\n\nماقدرت ارفعو\n<a href='{PREFIX + str(x[-1]).replace(' ', '%20')}'>اللينك</a> لتنزلو إنت", parse_mode='html')
                     await bot.send_message(call.message.chat.id, 'تم رفوع')
                 
         if call.data == 'result_no':
