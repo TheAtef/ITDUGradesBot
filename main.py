@@ -218,9 +218,9 @@ async def callback_data(call):
                 await bot.send_message(call.message.chat.id, f'لاقيت {str(len(stuff))} ملف\n\n{stuff[0][2]}\n{stuff[0][4]} - {stuff[0][3]}\n{stuff[0][1]}' )
                 for i in stuff:
                     x = stuff[i]
-                    await bot.send_chat_action(call.message.chat.id, action='typing')
                     link = PREFIX + str(x[-1]).replace(' ', '%20')
                     msg = await bot.send_message(call.message.chat.id, "البحث حاليا بـ: " + x[0])
+                    await bot.send_chat_action(call.message.chat.id, action='typing')
                     if i == random.randint(7,12) : await bot.send_sticker(call.message.chat.id, 'CAACAgIAAxkBAAE6MTporhNpTOL-TSGgmtNrd_0n6Z0FXAACaQsAApe62UniP9hNazdftjYE')
                     caption = row_finder(link, data)
                     if caption == None:
