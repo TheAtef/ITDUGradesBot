@@ -1,6 +1,6 @@
 werkzeug==2.2.2
 beautifulsoup4==4.11.1
-python-bibi==0.6.6
+python-bidi==0.6.6
 camelot_py==1.0.9
 Flask==2.2.3
 numpy==2.3.2
