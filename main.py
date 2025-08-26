@@ -1,5 +1,5 @@
-import random
 import os
+import random
 import numpy as np
 import camelot.io as camelotio
 import camelot
@@ -83,7 +83,9 @@ def row_finder(url, y):
         if row.size == 0: continue
         target = test_df.iloc[row]
         target = target.replace('\n',' ', regex=True)
-        unicode_text_RTL = get_display(target.to_string(index=False) , base_dir='R')
+        targetSeries = target.T.iloc[:,0]
+        targetSeriesReversed = targetSeries[::-1]
+        unicode_text_RTL = get_display(targetSeriesReversed.to_string(header=False) , base_dir='L')
         return unicode_text_RTL
     return None
         
@@ -206,18 +208,10 @@ async def callback_data(call):
                         await bot.send_chat_action(call.message.chat.id, "upload_document")
                         x = stuff[i]
                         try:
-                            link = (PREFIX + str(x[-1]) + '?random=' + str(random.randint(1, 100))).replace(' ', '%20')
+                            link = (PREFIX + str(x[-1])).replace(' ', '%20')
                             await bot.send_document(call.message.chat.id, link, caption = x[0], timeout=600)
                         except:
-                            try:
-                                link = (PREFIX + str(x[-1]) + '?random=' + str(random.randint(1, 100))).replace(' ', '%20') 
-                                await bot.send_document(call.message.chat.id, link, caption = x[0], timeout=600)
-                            except:
-                                link = (PREFIX + str(x[-1]) + '?random=' + str(random.randint(1, 100))).replace(' ', '%20') 
-                                try:
-                                    await bot.send_document(call.message.chat.id, link, caption = x[0], timeout=600)
-                                except:
-                                    await bot.send_message(call.message.chat.id, f'{x[0]}\n\nماقدرت ارفعو\nهي رابط لتنزلو إنت:\n{PREFIX + str(x[-1]).replace(' ', '%20')}')
+                              await bot.send_message(call.message.chat.id, f"{x[0]}\n\nماقدرت ارفعو\n<a href='{PREFIX + str(x[-1]).replace(' ', '%20')}'>اللينك</a> لتنزلو إنت")
                     await bot.send_message(call.message.chat.id, 'تم رفوع')
             else:
                 data = call.message.reply_to_message.text.removeprefix('/grades ')
@@ -227,11 +221,13 @@ async def callback_data(call):
                     await bot.send_chat_action(call.message.chat.id, action='typing')
                     link = PREFIX + str(x[-1]).replace(' ', '%20')
                     msg = await bot.send_message(call.message.chat.id, "البحث حاليا بـ: " + x[0])
+                    if i == random.randint(7,12) : await bot.send_sticker(call.message.chat.id, 'CAACAgIAAxkBAAE6MTporhNpTOL-TSGgmtNrd_0n6Z0FXAACaQsAApe62UniP9hNazdftjYE')
                     caption = row_finder(link, data)
                     if caption == None:
-                        await bot.edit_message_text(f'{x[0]}\n\nشكلك مو مقدمها بهالدورة\nإذا مقدمها اتأكد من اللينك:\n{link}',call.message.chat.id, msg.message_id)
+                        await bot.edit_message_text(f"{x[0]}\n\nشكلك مو مقدمها بهالدورة\nإذا مقدمها اتأكد من <a href='{link}'>اللينك</a>",call.message.chat.id, msg.message_id, parse_mode='html')
                     else:
                         await bot.edit_message_text(f'{x[0]}\n\n{caption}',call.message.chat.id, msg.message_id)
+                await bot.send_sticker(call.message.chat.id, 'CAACAgQAAxkBAAE6MRZorhIfZeo1gnRCBfSx78ZqFtx6dgACUQADFXbpB-KSS5LVyjJ_NgQ')
                 await bot.send_message(call.message.chat.id, 'تم العلامات')
                 
         if call.data == 'result_no':
