@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import os
 import requests
 from bs4 import BeautifulSoup
