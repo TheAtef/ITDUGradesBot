@@ -1,15 +1,8 @@
 import os
-import random
-import numpy as np
-import camelot.io as camelotio
-import camelot
-import numpy as np
 import requests
 from bs4 import BeautifulSoup
 from telebot.async_telebot import AsyncTeleBot
 from telebot import types
-import tempfile
-from bidi import get_display
 from server import server
 server()
 
@@ -17,8 +10,8 @@ headers = {
     'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36',
 }
 
-URL = os.environ.get('URL')
-PREFIX = os.environ.get('PREFIX')
+URL = 'https://www.damascusuniversity.edu.sy/ite/index.php'
+PREFIX = 'https://www.damascusuniversity.edu.sy/ite/'
 API_KEY = os.environ.get('API_KEY')
 
 bot = AsyncTeleBot(API_KEY)
@@ -61,35 +54,6 @@ markup_season.row(close_button,
             types.InlineKeyboardButton(text='تكميلي', callback_data='season3'),
             )
 
-def row_finder(url, y):
-    response = requests.get(url, headers=headers)
-    if response.status_code != 200: return None
-    
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_pdf:
-        temp_pdf.write(response.content)
-        temp_file_path = temp_pdf.name
-    
-    handler = camelot.handlers.PDFHandler(temp_file_path) 
-    page_list = handler._get_pages('all')
-    for i in range(1, len(page_list) + 1):
-        tables = camelotio.read_pdf(temp_file_path, pages=str(i))
-        if len(tables) == 0: continue
-        test_df = tables[0].df
-        new_header = test_df.iloc[0].replace('\n',' ', regex=True)
-        test_df = test_df[1:]
-        test_df.columns = new_header
-        row, col = np.where(test_df.apply(lambda x: x.astype(str).str.
-                                contains(str(y), case=False)))
-        if row.size == 0: continue
-        target = test_df.iloc[row]
-        target = target.replace('\n',' ', regex=True)
-        targetSeries = target.T.iloc[:,0]
-        targetSeriesReversed = targetSeries[::-1]
-        unicode_text_RTL = get_display(targetSeriesReversed.to_string(header=False) , base_dir='L')
-        return unicode_text_RTL
-    return None
-        
-
 user_dict = dict()
 
 def scrape():
@@ -118,11 +82,11 @@ def scrape():
         stuff[index] = row
     user_dict.clear()
     return stuff
-
+    
 @bot.message_handler(commands=['start'])
 async def reply(message):
     await bot.send_chat_action(message.chat.id, action='typing')
-    caption = 'بوت العلامات لكلية المعلوماتية - جامعة دمشق\n/files ببعتلك ملفات العلامات\n/grades بسحبلك علاماتك حسب الرقم الامتحاني\n/contact لتحاكي صاحب البوت'
+    caption = 'بوت العلامات لكلية المعلوماتية - جامعة دمشق\n/files ببعتلك ملفات العلامات\n/contact لتحاكي صاحب البوت'
     await bot.send_message(message.chat.id, caption, reply_to_message_id=message.message_id)
     
 @bot.message_handler(commands=['contact'])
@@ -131,19 +95,15 @@ async def contact(message):
     smsg = "Contact bot creator to report a bug or suggest a feature:\n@Absurduck\nhttps://t.me/Absurduck"
     await bot.reply_to(message, smsg, disable_web_page_preview=True)
         
-@bot.message_handler(commands=['files', 'grades'])
+@bot.message_handler(commands=['files'])
 async def reply(message):
-    if message.text.startswith('/grades') and len(message.text.removeprefix('/grades')) < 4:
-        await bot.send_chat_action(message.chat.id, action='typing')
-        await bot.send_message(message.chat.id, 'اكتب الكواند مع رقمك الامتحاني\nمتل هيك:\n/grades 30495', reply_to_message_id=message.message_id)
-    else:
-        await bot.send_chat_action(message.chat.id, action='typing')
-        await bot.send_message(message.chat.id, 'اختار السنة          :', reply_markup= markup_year, reply_to_message_id=message.message_id)
+    await bot.send_chat_action(message.chat.id, action='typing')
+    await bot.send_message(message.chat.id, 'اختار السنة          :', reply_markup= markup_year, reply_to_message_id=message.message_id)
 
 @bot.message_handler(commands=None)
 async def reply(message):
     await bot.send_chat_action(message.chat.id, action='typing')
-    caption = 'بوت العلامات لكلية المعلوماتية - جامعة دمشق\n/files ببعتلك ملفات العلامات\n/grades بسحبلك علاماتك حسب الرقم الامتحاني\n/contact لتحاكي صاحب البوت'
+    caption = 'بوت العلامات لكلية المعلوماتية - جامعة دمشق\n/files ببعتلك ملفات العلامات\n/contact لتحاكي صاحب البوت'
     await bot.send_message(message.chat.id, caption, reply_to_message_id=message.message_id)
     
 @bot.callback_query_handler(func=lambda call: True)
@@ -213,22 +173,6 @@ async def callback_data(call):
                         except:
                               await bot.send_message(call.message.chat.id, f"{x[0]}\n\nماقدرت ارفعو\n<a href='{PREFIX + str(x[-1]).replace(' ', '%20')}'>اللينك</a> لتنزلو إنت")
                     await bot.send_message(call.message.chat.id, 'تم رفوع')
-            else:
-                data = call.message.reply_to_message.text.removeprefix('/grades ')
-                await bot.send_message(call.message.chat.id, f'لاقيت {str(len(stuff))} ملف\n\n{stuff[0][2]}\n{stuff[0][4]} - {stuff[0][3]}\n{stuff[0][1]}' )
-                for i in stuff:
-                    x = stuff[i]
-                    link = PREFIX + str(x[-1]).replace(' ', '%20')
-                    msg = await bot.send_message(call.message.chat.id, "البحث حاليا بـ: " + x[0])
-                    await bot.send_chat_action(call.message.chat.id, action='typing')
-                    if i == random.randint(7,12) : await bot.send_sticker(call.message.chat.id, 'CAACAgIAAxkBAAE6MTporhNpTOL-TSGgmtNrd_0n6Z0FXAACaQsAApe62UniP9hNazdftjYE')
-                    caption = row_finder(link, data)
-                    if caption == None:
-                        await bot.edit_message_text(f"{x[0]}\n\nشكلك مو مقدمها بهالدورة\nإذا مقدمها اتأكد من <a href='{link}'>اللينك</a>",call.message.chat.id, msg.message_id, parse_mode='html')
-                    else:
-                        await bot.edit_message_text(f'{x[0]}\n\n{caption}',call.message.chat.id, msg.message_id)
-                await bot.send_sticker(call.message.chat.id, 'CAACAgQAAxkBAAE6MRZorhIfZeo1gnRCBfSx78ZqFtx6dgACUQADFXbpB-KSS5LVyjJ_NgQ')
-                await bot.send_message(call.message.chat.id, 'تم العلامات')
                 
         if call.data == 'result_no':
             user_dict.clear()
