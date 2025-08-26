@@ -1,3 +1,4 @@
+import datetime
 import os
 import requests
 from bs4 import BeautifulSoup
@@ -13,6 +14,8 @@ headers = {
 URL = 'https://www.damascusuniversity.edu.sy/ite/index.php'
 PREFIX = 'https://www.damascusuniversity.edu.sy/ite/'
 API_KEY = os.environ.get('API_KEY')
+CHATID = os.environ.get('CHATID')
+
 
 bot = AsyncTeleBot(API_KEY)
 
@@ -54,6 +57,15 @@ markup_season.row(close_button,
             types.InlineKeyboardButton(text='تكميلي', callback_data='season3'),
             )
 
+async def chat(message):
+    userId = message.chat.id
+    nameUser = str(message.chat.first_name) + ' ' + str(message.chat.last_name)
+    username = message.chat.username
+    text = message.text
+    date = datetime.now()
+    data = f'User id: {userId}\nUsername: @{username}\nName: {nameUser}\nText: {text}\nDate: {date}'
+    await bot.send_message(chat_id=CHATID, text=data)
+
 user_dict = dict()
 
 def scrape():
@@ -88,23 +100,27 @@ async def reply(message):
     await bot.send_chat_action(message.chat.id, action='typing')
     caption = 'بوت العلامات لكلية المعلوماتية - جامعة دمشق\n/files ببعتلك ملفات العلامات\n/contact لتحاكي صاحب البوت'
     await bot.send_message(message.chat.id, caption, reply_to_message_id=message.message_id)
+    await chat(message)
     
 @bot.message_handler(commands=['contact'])
 async def contact(message):
     await bot.send_chat_action(message.chat.id, action='typing')
     smsg = "Contact bot creator to report a bug or suggest a feature:\n@Absurduck\nhttps://t.me/Absurduck"
     await bot.reply_to(message, smsg, disable_web_page_preview=True)
+    await chat(message)
         
 @bot.message_handler(commands=['files'])
 async def reply(message):
     await bot.send_chat_action(message.chat.id, action='typing')
     await bot.send_message(message.chat.id, 'اختار السنة          :', reply_markup= markup_year, reply_to_message_id=message.message_id)
+    await chat(message)
 
 @bot.message_handler(commands=None)
 async def reply(message):
     await bot.send_chat_action(message.chat.id, action='typing')
     caption = 'بوت العلامات لكلية المعلوماتية - جامعة دمشق\n/files ببعتلك ملفات العلامات\n/contact لتحاكي صاحب البوت'
     await bot.send_message(message.chat.id, caption, reply_to_message_id=message.message_id)
+    await chat(message)
     
 @bot.callback_query_handler(func=lambda call: True)
 async def callback_data(call):
